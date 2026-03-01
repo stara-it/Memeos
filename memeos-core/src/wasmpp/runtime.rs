@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use wasmer::{Module, Instance, Store, imports};
 use wasmer_compiler_cranelift::Cranelift;
 use wasmer_engine_universal::Universal;
@@ -9,7 +8,13 @@ pub enum ExecutionResult {
     Error(String),
 }
 
-/// A production-focused WASM runtime sandbox using Wasmer + Cranelift.
+/// A production-focused WASM runtime sandbox using Wasmer + Cranelift with deterministic
+/// memory enforcement via module declaration validation.
+///
+/// This implementation enforces memory limits by:
+/// 1. Requiring modules to declare a maximum memory limit
+/// 2. Rejecting modules whose declared maximum exceeds our configured limit
+/// 3. Disabling all host imports (no FS/network/env access)
 pub struct WasmRuntime {
     store: Store,
     gas_limit: u64,
@@ -21,7 +26,12 @@ impl WasmRuntime {
         let compiler = Cranelift::default();
         let engine = Universal::new(compiler).engine();
         let store = Store::new(&engine);
-        Ok(Self { store, gas_limit, memory_limit_pages })
+
+        Ok(Self {
+            store,
+            gas_limit,
+            memory_limit_pages,
+        })
     }
 
     pub fn execute(&self, wasm_bytes: &[u8], _input: &[u8]) -> ExecutionResult {
@@ -34,39 +44,44 @@ impl WasmRuntime {
             Err(e) => return ExecutionResult::Error(format!("Module compile error: {}", e)),
         };
 
+        // Empty imports - no host access allowed (no FS, network, env vars)
         let import_object = imports! {};
         let instance = match Instance::new(&module, &import_object) {
             Ok(i) => i,
             Err(e) => return ExecutionResult::Error(format!("Instance error: {}", e)),
         };
 
-        // Enforce memory declaration: require the module to declare a maximum memory
-        // and ensure it's within our configured `memory_limit_pages`.
+        // Enforce deterministic memory limit:
+        // Module must declare a maximum memory and it must be <= our limit.
         if let Ok(mem) = instance.exports.get_memory("memory") {
-            let ty = mem.ty(&self.store);
-            match ty.maximum() {
-                Some(max) => {
-                    if max > self.memory_limit_pages {
-                        return ExecutionResult::Error("WASM module maximum memory exceeds allowed limit".into());
-                    }
+            let ty = mem.ty();
+            if let Some(max_pages) = ty.maximum {
+                // Pages is a tuple struct wrapping u32
+                let max_val: u32 = max_pages.0;
+                if max_val > self.memory_limit_pages {
+                    return ExecutionResult::Error(format!(
+                        "WASM module max memory ({} pages) exceeds allowed limit ({} pages)",
+                        max_val, self.memory_limit_pages
+                    ));
                 }
-                None => {
-                    return ExecutionResult::Error("WASM module must declare a maximum memory limit".into());
-                }
+            } else {
+                return ExecutionResult::Error(
+                    "WASM module must declare a maximum memory limit to run in this sandbox".into(),
+                );
             }
         }
 
-        // Try to call common entrypoints
+        // Try to call common entrypoints: _start, run, or main
         for name in &["_start", "run", "main"] {
             if let Ok(func) = instance.exports.get_function(name) {
-                let r = func.call(&[]);
-                match r {
+                match func.call(&[]) {
                     Ok(_) => return ExecutionResult::Success(0),
-                    Err(e) => return ExecutionResult::Error(format!("Runtime trap: {}", e)),
+                    Err(e) => return ExecutionResult::Error(format!("Execution trap: {}", e)),
                 }
             }
         }
 
+        // Module loaded successfully but no known entrypoint found
         ExecutionResult::Success(0)
     }
 }

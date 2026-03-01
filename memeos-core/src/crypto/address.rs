@@ -3,7 +3,9 @@ use bech32::{self, Bech32m, Hrp};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Address(String);
+// expose the inner string so callers can access it when necessary; we also
+// provide convenience accessors for nicer ergonomics.
+pub struct Address(pub String);
 
 impl Address {
     /// Mengubah Public Key menjadi Alamat MEMEOS (format: memeos1...)
@@ -22,8 +24,14 @@ impl Address {
         Address(encoded)
                                                                                                                 }
 
-                                                                                                                    pub fn to_string(&self) -> String {
-                                                                                                                            self.0.clone()
-                                                                                                                                }
-                                                                                                                                }
+/// Return the raw inner address string without cloning.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// Legacy convenience; clones the string.
+    pub fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
                                                                                                                                 

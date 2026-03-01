@@ -2,7 +2,9 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+// Wallets and various other parts of the code often print or debug a KeyPair,
+// so the struct needs `Debug` in addition to serialization derives.
+#[derive(Serialize, Deserialize, Debug)]
 pub struct KeyPair {
     pub secret: SigningKey,
     pub public: VerifyingKey,

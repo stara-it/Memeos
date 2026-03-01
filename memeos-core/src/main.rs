@@ -14,76 +14,61 @@ use crate::crypto::keypair::KeyPair;
 use crate::network::node::MemeosNode;
 use crate::storage::block_db::BlockDB;
 use crate::core::block::Block;
+use crate::wallet::MemeosWallet; // Pastikan ini ada
 
 fn main() {
     println!("--- 🌐 MEMEOS CORE ENGINE (RUST 2024) ---");
 
-        // 1. Inisialisasi Penyimpanan Permanen (Storage)
-            // Membuat folder 'memeos_data' di direktori aktif (Termux/PC)
-                let storage = BlockDB::new("./memeos_data");
+        // --- BAGIAN 1: SISTEM WALLET FOUNDER ---
+            let path = "memeos_master.dat"; 
 
-                    // 2. Bangun Identitas Node (Keypair Asli)
-                        // Setiap kali node dijalankan, ia memiliki identitas unik
-                            let node_identity = KeyPair::generate();
-                                println!("Node Identity (Pub): {}", hex::encode(node_identity.public_bytes()));
+                let my_wallet = match MemeosWallet::load(path) {
+                        Ok(w) => {
+                                    println!("✅ Selamat Datang Kembali, Founder!");
+                                                w
+                                                        },
+                                                                Err(_) => {
+                                                                            println!("🆕 Menciptakan Wallet Master untuk Alokasi 400jt MEMEOS...");
+                                                                                        let new_w = MemeosWallet::new();
+                                                                                                    new_w.save(path).expect("Gagal mengamankan wallet!");
+                                                                                                                new_w
+                                                                                                                        }
+                                                                                                                            };
 
-                                    // 3. Ciptakan Genesis Block (Suplai Global 1 Miliar)
-                                        // Menggunakan KeyPair asli untuk alokasi dana awal
-                                            let founder = KeyPair::generate();
-                                                let community = KeyPair::generate();
-                                                    let dev = KeyPair::generate();
+                                                                                                                                println!("🗝️ Alamat Dompet Anda: {}", my_wallet.address.0);
+                                                                                                                                    println!("🛡️ Status: Founder (Reserved 400.000.000 MEMEOS)");
 
-                                                        let (genesis_header, genesis_tx) = Genesis::build(
-                                                                founder.public_bytes(),
-                                                                        community.public_bytes(),
-                                                                                dev.public_bytes(),
-                                                                                    );
+                                                                                                                                        // --- BAGIAN 2: INISIALISASI NODE & STORAGE ---
+                                                                                                                                            let storage = BlockDB::new("./memeos_data");
+                                                                                                                                                let node_identity = KeyPair::generate();
+                                                                                                                                                    println!("Node Identity (Pub): {}", hex::encode(node_identity.public_bytes()));
 
-                                                                                        let genesis_hash = genesis_header.hash();
-                                                                                            println!("✅ Genesis Block Hash: {}", genesis_hash.to_hex());
-                                                                                                println!("💰 Total Initial Supply: 1,000,000,000 MEMEOS");
+                                                                                                                                                        // --- BAGIAN 3: GENESIS BLOCK ---
+                                                                                                                                                            // Menggunakan identitas dompet Founder yang baru saja dimuat/dibuat
+                                                                                                                                                                let community = KeyPair::generate();
+                                                                                                                                                                    let dev = KeyPair::generate();
 
-                                                                                                    // 4. Simpan Genesis Block ke Disk (Persistence)
-                                                                                                        // Ini memastikan data tidak hilang saat node dimatikan
-                                                                                                            let genesis_block = Block::new(genesis_header, vec![genesis_tx]);
-                                                                                                                match storage.save_block(&genesis_block) {
-                                                                                                                        Ok(_) => println!("💾 Genesis block permanently saved to storage."),
-                                                                                                                                Err(e) => eprintln!("❌ Failed to save genesis block: {}", e),
-                                                                                                                                    }
+                                                                                                                                                                        let (genesis_header, genesis_tx) = Genesis::build(
+                                                                                                                                                                                my_wallet.keypair.public_bytes(), // Menggunakan wallet Founder kamu
+                                                                                                                                                                                        community.public_bytes(),
+                                                                                                                                                                                                dev.public_bytes(),
+                                                                                                                                                                                                    );
 
-                                                                                                                                        // 5. Jalankan Jaringan P2P (Port Default 9333)
-                                                                                                                                            // Membuka port TCP asli agar node lain bisa terhubung
-                                                                                                                                                let node = MemeosNode::new(9333);
-                                                                                                                                                    
-                                                                                                                                                        println!("🚀 MEMEOS Node is running. Listening for peers...");
-                                                                                                                                                            println!("Listening on: {}", node.address);
-                                                                                                                                                                
-                                                                                                                                                                    // Memulai loop jaringan (Blocking Call)
-                                                                                                                                                                        node.start();
-                                                                                                                                                                        }
-                                                                                                                                                                        fn main() {
-                                                                                                                                                                                println!("--- 🌐 MEMEOS CORE ENGINE (RUST 2024) ---");
+                                                                                                                                                                                                        let genesis_hash = genesis_header.hash();
+                                                                                                                                                                                                            println!("✅ Genesis Block Hash: {}", genesis_hash.to_hex());
+                                                                                                                                                                                                                println!("💰 Total Initial Supply: 1,000,000,000 MEMEOS");
 
-                                                                                                                                                                                    // Lokasi file brankas pribadi kamu di Termux
-                                                                                                                                                                                        let path = "memeos_master.dat"; 
+                                                                                                                                                                                                                    // Simpan ke Disk
+                                                                                                                                                                                                                        let genesis_block = Block::new(genesis_header, vec![genesis_tx]);
+                                                                                                                                                                                                                            match storage.save_block(&genesis_block) {
+                                                                                                                                                                                                                                    Ok(_) => println!("💾 Genesis block permanently saved to storage."),
+                                                                                                                                                                                                                                            Err(e) => eprintln!("❌ Failed to save genesis block: {}", e),
+                                                                                                                                                                                                                                                }
 
-                                                                                                                                                                                            let my_wallet = match MemeosWallet::load(path) {
-                                                                                                                                                                                                    Ok(w) => {
-                                                                                                                                                                                                                println!("✅ Selamat Datang Kembali, Founder!");
-                                                                                                                                                                                                                            w
-                                                                                                                                                                                                                                    },
-                                                                                                                                                                                                                                            Err(_) => {
-                                                                                                                                                                                                                                                        println!("🆕 Menciptakan Wallet Master untuk Alokasi 400jt MEMEOS...");
-                                                                                                                                                                                                                                                                    let new_w = MemeosWallet::new();
-                                                                                                                                                                                                                                                                                new_w.save(path).expect("Gagal mengamankan wallet!");
-                                                                                                                                                                                                                                                                                            new_w
-                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                        };
-
-                                                                                                                                                                                                                                                                                                            println!("🗝️ Alamat Dompet Anda: {}", my_wallet.address.0);
-                                                                                                                                                                                                                                                                                                                println!("🛡️ Status: Founder (Reserved 400.000.000 MEMEOS)");
-                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                        // ... Lanjut ke proses Genesis Block ...
-                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                        }
+                                                                                                                                                                                                                                                    // --- BAGIAN 4: RUNNING P2P NETWORK ---
+                                                                                                                                                                                                                                                        let node = MemeosNode::new(9333);
+                                                                                                                                                                                                                                                            println!("🚀 MEMEOS Node is running. Listening for peers...");
+                                                                                                                                                                                                                                                                println!("Listening on: {}", node.address);
+                                                                                                                                                                                                                                                                    node.start();
+                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                    

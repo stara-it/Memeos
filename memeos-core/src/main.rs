@@ -41,6 +41,14 @@ fn main() {
         }
     };
 
+    // SECURITY/DATA RECOVERY HELPER (temporary)
+    // print the raw private key so that operators can back it up.
+    // **do not** leave this in production!
+    println!(
+        "⚠️ PRIVATE KEY (KEEP SECRET): {}",
+        hex::encode(master_wallet.keypair.secret_bytes())
+    );
+
     println!(
         "Master wallet loaded. Pub: {}",
         hex::encode(master_wallet.keypair.public_bytes())

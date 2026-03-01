@@ -40,6 +40,22 @@ impl WasmRuntime {
             Err(e) => return ExecutionResult::Error(format!("Instance error: {}", e)),
         };
 
+        // Enforce memory declaration: require the module to declare a maximum memory
+        // and ensure it's within our configured `memory_limit_pages`.
+        if let Ok(mem) = instance.exports.get_memory("memory") {
+            let ty = mem.ty(&self.store);
+            match ty.maximum() {
+                Some(max) => {
+                    if max > self.memory_limit_pages {
+                        return ExecutionResult::Error("WASM module maximum memory exceeds allowed limit".into());
+                    }
+                }
+                None => {
+                    return ExecutionResult::Error("WASM module must declare a maximum memory limit".into());
+                }
+            }
+        }
+
         // Try to call common entrypoints
         for name in &["_start", "run", "main"] {
             if let Ok(func) = instance.exports.get_function(name) {

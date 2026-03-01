@@ -63,11 +63,41 @@ fn main() {
 
     let genesis_block = Block::new(genesis_header, vec![genesis_tx]);
 
+    // Helper to format numbers with commas (e.g., 400000000 -> 400,000,000)
+    fn format_with_commas(n: u64) -> String {
+        let s = n.to_string();
+        let mut out = String::new();
+        let mut chars: Vec<char> = s.chars().rev().collect();
+        for i in 0..chars.len() {
+            if i != 0 && i % 3 == 0 {
+                out.push(',');
+            }
+            out.push(chars[i]);
+        }
+        out.chars().rev().collect()
+    }
+
+    // Scan genesis block outputs and compute founder balance (in MEMEOS units)
+    let founder_total_smallest: u64 = if !genesis_block.transactions.is_empty() {
+        genesis_block.transactions[0]
+            .outputs
+            .iter()
+            .filter(|o| o.recipient == master_wallet.keypair.public_bytes())
+            .map(|o| o.value)
+            .sum()
+    } else {
+        0
+    };
+
+    let founder_units = founder_total_smallest / UNIT;
+
+    println!("💰 SALDO FOUNDER: {} MEMEOS", format_with_commas(founder_units));
+
     match storage.save_block(&genesis_block) {
         Ok(_) => println!("💾 Genesis block permanently saved to ./memeos_data."),
         Err(e) => eprintln!("❌ Failed to save genesis block: {}", e),
     }
 
-        println!("✅ Genesis Block created and stored. Node initialization complete.");
-    }
+    println!("✅ Genesis Block created and stored. Node initialization complete.");
+}
                                                                                                                                                                                                                                                                     

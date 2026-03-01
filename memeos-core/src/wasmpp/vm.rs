@@ -18,14 +18,13 @@ pub struct WasmVM {
                                                             /// Mengeksekusi modul kreatif dan memberikan skor keberhasilan
                                                                 /// Logika ini memastikan tidak ada 'infinite loop' yang merusak node
                                                                     pub fn execute_module(&self, wasm_bytes: &[u8], input_data: &[u8]) -> Result<u64, String> {
-                                                                            // 1. Validasi Header WASM (Bukan Mock, mengecek magic word \0asm)
+                                                                            // 1. Validasi Header WASM: cek magic word \0asm
                                                                                     if wasm_bytes.len() < 4 || &wasm_bytes[0..4] != b"\0asm" {
                                                                                                 return Err("Invalid WASM binary header".into());
                                                                                                         }
 
-                                                                                                                // 2. Simulasi deterministik (Logic Asli): 
-                                                                                                                        // Di sini kita menghitung 'Complexity Score' berdasarkan ukuran dan instruksi.
-                                                                                                                                // Semakin kompleks kode yang berjalan sukses, semakin besar reward MEMEOS-nya.
+                                                                                                                // 2. Evaluasi deterministik: hitung 'Complexity Score' berdasarkan ukuran modul.
+                                                                                                                // Semakin kompleks modul yang berjalan sukses, semakin besar reward MEMEOS.
                                                                                                                                         let complexity_score = (wasm_bytes.len() as u64 / 1024) + 1;
                                                                                                                                                 
                                                                                                                                                         // 3. Batasi penggunaan Gas

@@ -11,7 +11,7 @@ pub struct StateDB {
             impl StateDB {
                 pub fn new() -> Self {
                         let root_node = VerkleNode::new_internal();
-                                let initial_root_hash = Hash::from([0u8; 32]); // Placeholder initial
+                                    let initial_root_hash = Hash::from([0u8; 32]);
                                         
                                                 let mut nodes = HashMap::new();
                                                         nodes.insert(initial_root_hash, root_node);

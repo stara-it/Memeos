@@ -1,0 +1,43 @@
+[package]
+name = "memeos-core"
+version = "0.1.0"
+edition = "2024"
+authors = ["Stara-IT", "Your Name"]
+description = "Memeos: Blockchain Kreatif Ringan dengan eUXTO & Verkle Tree"
+
+[dependencies]
+# --- Kriptografi Asli ---
+# Hashing super cepat untuk smartphone
+blake3 = "1.5"
+# Implementasi Schnorr Signature via Ed25519
+ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
+# Generator angka acak yang aman untuk kunci privat
+rand = "0.8"
+# Format alamat dompet (seperti bitcoin memeos1...)
+bech32 = "0.11"
+# Library konversi ke Hexadecimal
+hex = "0.4"
+
+# --- Serialisasi & Data ---
+# Framework serialisasi standar Rust
+serde = { version = "1.0", features = ["derive"] }
+# Serialisasi biner deterministik (Kunci Konsensus)
+bincode = "1.3"
+
+# --- Utilitas ---
+# Manajemen waktu Unix Epoch
+chrono = "0.4"
+# Logging untuk monitoring node
+log = "0.4"
+env_logger = "0.11"
+
+# --- Networking (Opsional jika ingin lebih advanced) ---
+# Namun untuk saat ini kita menggunakan std::net (TCP asli) 
+# yang sudah bawaan dari Rust 2024.
+
+[profile.release]
+# Optimasi maksimal untuk dijalankan di Termux (Android)
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

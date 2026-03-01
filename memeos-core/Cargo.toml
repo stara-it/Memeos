@@ -31,6 +31,12 @@ chrono = "0.4"
 log = "0.4"
 env_logger = "0.11"
 
+# WebAssembly execution runtime (Wasmer with Cranelift)
+wasmer = "3.2"
+wasmer-compiler-cranelift = "3.2"
+wasmer-engine-universal = "3.2"
+wasmer-middlewares = "0.6"
+
 # --- Networking (Opsional jika ingin lebih advanced) ---
 # Namun untuk saat ini kita menggunakan std::net (TCP asli) 
 # yang sudah bawaan dari Rust 2024.

@@ -14,7 +14,11 @@ use crate::core::genesis::Genesis;
 use crate::crypto::keypair::KeyPair;
 use crate::storage::block_db::BlockDB;
 use crate::core::block::Block;
+use crate::ledger::transaction::Transaction;
 use crate::wallet::MemeosWallet;
+use std::io::{stdin, stdout, Write, BufRead};
+use std::fs::OpenOptions;
+use std::path::Path;
 
 /// Entry point for the production node.  
 ///
@@ -76,7 +80,33 @@ fn main() {
         }
         out.chars().rev().collect()
     }
+    // simple persistent history storage (append-only text log)
+    fn history_dir() -> &'static str {
+        "./memeos_data/history"
+    }
 
+    fn save_tx_history(tx: &Transaction) -> Result<(), String> {
+        let dir = history_dir();
+        std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+        let file_path = Path::new(dir).join("history.txt");
+        let mut file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&file_path)
+            .map_err(|e| e.to_string())?;
+        let line = format!("{:?}\n", tx);
+        file.write_all(line.as_bytes()).map_err(|e| e.to_string())
+    }
+
+    fn load_tx_history() -> Vec<String> {
+        let file_path = Path::new(history_dir()).join("history.txt");
+        if let Ok(f) = std::fs::File::open(&file_path) {
+            let reader = std::io::BufReader::new(f);
+            reader.lines().filter_map(Result::ok).collect()
+        } else {
+            Vec::new()
+        }
+    }
     // Scan genesis block outputs and compute founder balance (in MEMEOS units)
     let founder_total_smallest: u64 = if !genesis_block.transactions.is_empty() {
         genesis_block.transactions[0]
@@ -98,6 +128,89 @@ fn main() {
         Err(e) => eprintln!("❌ Failed to save genesis block: {}", e),
     }
 
+    // record genesis transaction in history as initial state
+    if let Some(tx) = genesis_block.transactions.get(0) {
+        let _ = save_tx_history(tx);
+    }
+
     println!("✅ Genesis Block created and stored. Node initialization complete.");
+
+    // --- begin interactive CLI ----
+    loop {
+        println!("\n==== MENU ====");
+        println!("[1] Cek Saldo");
+        println!("[2] Kirim Koin");
+        println!("[3] Riwayat Transaksi");
+        println!("[4] Keluar");
+        print!("Pilih opsi: ");
+        stdout().flush().ok();
+
+        let mut choice = String::new();
+        stdin().read_line(&mut choice).ok();
+        match choice.trim() {
+            "1" => {
+                // recalc founder balance from genesis
+                let founder_total_smallest: u64 = if !genesis_block.transactions.is_empty() {
+                    genesis_block.transactions[0]
+                        .outputs
+                        .iter()
+                        .filter(|o| o.recipient == master_wallet.keypair.public_bytes())
+                        .map(|o| o.value)
+                        .sum()
+                } else {
+                    0
+                };
+                let founder_units = founder_total_smallest / UNIT;
+                println!("💰 SALDO FOUNDER: {} MEMEOS", format_with_commas(founder_units));
+            }
+            "2" => {
+                // send coin flow
+                print!("Masukkan public key penerima (hex, 64 char): ");
+                stdout().flush().ok();
+                let mut rcv = String::new();
+                stdin().read_line(&mut rcv).ok();
+                let rcv = rcv.trim();
+                if let Ok(bytes) = hex::decode(rcv) {
+                    if bytes.len() == 32 {
+                        let mut rec_key = [0u8; 32];
+                        rec_key.copy_from_slice(&bytes);
+                        print!("Jumlah (dalam unit): ");
+                        stdout().flush().ok();
+                        let mut amt = String::new();
+                        stdin().read_line(&mut amt).ok();
+                        if let Ok(amount) = amt.trim().parse::<u64>() {
+                            // for simplicity fee = 0
+                            let tx = Transaction::new_transfer_signed(
+                                master_wallet.keypair.public_bytes(),
+                                rec_key,
+                                amount,
+                                0,
+                                &master_wallet.keypair.secret,
+                            );
+                            println!("Transaksi dibuat dan ditandatangani: {:?}", tx);
+                            let _ = save_tx_history(&tx);
+                        } else {
+                            println!("Jumlah tidak valid");
+                        }
+                    } else {
+                        println!("Public key harus 32 byte (64 hex)");
+                    }
+                } else {
+                    println!("Format hex tidak valid");
+                }
+            }
+            "3" => {
+                println!("-- RIWAYAT TRANSAKSI --");
+                for line in load_tx_history() {
+                    println!("{}", line);
+                }
+            }
+            "4" | "q" | "Q" => {
+                println!("Keluar. Sampai jumpa.");
+                break;
+            }
+            _ => println!("Pilihan tidak valid"),
+        }
+    }
 }
                                                                                                                                                                                                                                                                     

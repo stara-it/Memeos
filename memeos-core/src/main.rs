@@ -16,7 +16,7 @@ use crate::crypto::keypair::KeyPair;
 use crate::ledger::transaction::Transaction;
 use crate::storage::block_db::BlockDB;
 use crate::wallet::MemeosWallet;
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::{BufRead, Write, stdin, stdout};
 use std::path::Path;
 
@@ -34,14 +34,31 @@ fn main() {
     // wallet path on disk
     let wallet_path = "./memeos_data/memeos_master.dat";
 
-    // load or initialize master wallet
-    let master_wallet = match crate::wallet::load_wallet(wallet_path) {
-        Ok(w) => w,
-        Err(_) => {
+    // check for existing wallet and optionally rotate key
+    let master_wallet = if Path::new(wallet_path).exists() {
+        println!("Master wallet file exists. Rotate master key? (y/N) ");
+        let mut answer = String::new();
+        stdin().read_line(&mut answer).ok();
+        if answer.trim().eq_ignore_ascii_case("y") {
+            // remove old wallet file
+            let _ = fs::remove_file(wallet_path);
             let w = MemeosWallet::new();
-            crate::wallet::save_wallet(wallet_path, &w).expect("Failed to save master wallet");
+
+            // clear the screen before showing the secret mnemonic
+            crate::utils::clear_screen();
+            println!("🚨 NEW MASTER MNEMONIC (keep it secret!)\n{}
+", w.keypair.to_mnemonic_12());
+
+            crate::wallet::save_wallet(wallet_path, &w)
+                .expect("Failed to save master wallet");
             w
+        } else {
+            crate::wallet::load_wallet(wallet_path).expect("Failed to load master wallet")
         }
+    } else {
+        let w = MemeosWallet::new();
+        crate::wallet::save_wallet(wallet_path, &w).expect("Failed to save master wallet");
+        w
     };
 
     println!(

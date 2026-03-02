@@ -1,0 +1,11 @@
+/workspaces/Memeos/memeos-core/target/release/deps/bip39-780538998e154cbc.d: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/internal_macros.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/mod.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/english.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/pbkdf2.rs
+
+/workspaces/Memeos/memeos-core/target/release/deps/libbip39-780538998e154cbc.rlib: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/internal_macros.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/mod.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/english.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/pbkdf2.rs
+
+/workspaces/Memeos/memeos-core/target/release/deps/libbip39-780538998e154cbc.rmeta: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/internal_macros.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/mod.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/english.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/pbkdf2.rs
+
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/lib.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/internal_macros.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/mod.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/language/english.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-1.2.0/src/pbkdf2.rs:

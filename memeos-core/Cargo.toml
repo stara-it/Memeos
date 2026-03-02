@@ -13,6 +13,10 @@ blake3 = "1.5"
 k256 = { version = "0.13", features = ["sha2", "serde", "schnorr"] }
 # Generator angka acak yang aman untuk kunci privat
 rand = "0.8"
+# BIP-39 mnemonic support for key phrases
+bip39 = "1.1"
+# SHA-2 hashing (already a dependency of k256 but we import directly)
+sha2 = "0.10"
 # Format alamat dompet (seperti bitcoin memeos1...)
 bech32 = "0.11"
 # Library konversi ke Hexadecimal

@@ -1,4 +1,0 @@
-From<&wast::component::item_ref::ItemRef<'_, T>>
-From<&wast::component::types::ComponentTypeUse<'_, T>>
-From<&wast::component::types::CoreTypeUse<'_, T>>
-From<cranelift_codegen::ir::immediates::Uimm32>

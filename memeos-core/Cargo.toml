@@ -9,8 +9,8 @@ description = "Memeos: Blockchain Kreatif Ringan dengan eUXTO & Verkle Tree"
 # --- Kriptografi Asli ---
 # Hashing super cepat untuk smartphone
 blake3 = "1.5"
-# Implementasi Schnorr Signature via Ed25519
-ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
+# Schnorr Signatures BIP-340 (secp256k1) - Pure Rust
+k256 = { version = "0.13", features = ["sha2", "serde", "schnorr"] }
 # Generator angka acak yang aman untuk kunci privat
 rand = "0.8"
 # Format alamat dompet (seperti bitcoin memeos1...)

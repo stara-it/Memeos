@@ -1,5 +1,6 @@
 use crate::crypto::hash::Hash;
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+use k256::schnorr::SigningKey;
+use k256::schnorr::signature::Signer;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -14,13 +15,13 @@ pub struct Transaction {
 pub struct Input {
     pub prev_tx_hash: Hash,
     pub prev_index: u32,
-    pub signature: Vec<u8>, // Schnorr Signature bytes
+    pub signature: Vec<u8>, // BIP-340 Schnorr Signature (64 bytes)
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Output {
     pub value: u64,
-    pub recipient: [u8; 32],   // Public Key penerima
+    pub recipient: [u8; 32],   // BIP-340 Schnorr Public Key
     pub data: Option<Vec<u8>>, // Data tambahan untuk eUXTO
 }
 
@@ -65,7 +66,7 @@ impl Transaction {
         }
     }
 
-    /// Buat transaksi transfer dan segera tanda tangani dengan kunci privat.
+    /// Buat transaksi transfer dan segera tanda tangani dengan kunci privat (BIP-340 Schnorr).
     pub fn new_transfer_signed(
         sender: [u8; 32],
         receiver: [u8; 32],

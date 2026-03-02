@@ -1,4 +1,4 @@
-use wasmer::{Module, Instance, Store, imports};
+use wasmer::{Instance, Module, Store, imports};
 use wasmer_compiler_cranelift::Cranelift;
 use wasmer_engine_universal::Universal;
 

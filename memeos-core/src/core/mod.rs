@@ -1,9 +1,9 @@
 pub mod block;
-pub mod header;
 pub mod chain;
-pub mod genesis;
 pub mod consensus;
+pub mod genesis;
+pub mod header;
 
 pub use block::Block;
-pub use header::BlockHeader;
 pub use genesis::Genesis;
+pub use header::BlockHeader;

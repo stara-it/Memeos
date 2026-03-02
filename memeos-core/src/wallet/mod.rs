@@ -18,4 +18,3 @@ pub fn load_wallet(path: &str) -> Result<MemeosWallet, String> {
     let data = fs::read(path).map_err(|e| e.to_string())?;
     bincode::deserialize(&data).map_err(|e| e.to_string())
 }
-                                                                                                                                                                                                

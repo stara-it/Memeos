@@ -1,23 +1,23 @@
 // top-level modules
-mod crypto;
-mod core;
-mod ledger;
-mod state;
-mod wasmpp;
-mod network;
-mod storage;
-mod wallet;
-mod utils;
 mod config;
+mod core;
+mod crypto;
+mod ledger;
+mod network;
+mod state;
+mod storage;
+mod utils;
+mod wallet;
+mod wasmpp;
 
+use crate::core::block::Block;
 use crate::core::genesis::Genesis;
 use crate::crypto::keypair::KeyPair;
-use crate::storage::block_db::BlockDB;
-use crate::core::block::Block;
 use crate::ledger::transaction::Transaction;
+use crate::storage::block_db::BlockDB;
 use crate::wallet::MemeosWallet;
-use std::io::{stdin, stdout, Write, BufRead};
 use std::fs::OpenOptions;
+use std::io::{BufRead, Write, stdin, stdout};
 use std::path::Path;
 
 /// Entry point for the production node.  
@@ -39,12 +39,10 @@ fn main() {
         Ok(w) => w,
         Err(_) => {
             let w = MemeosWallet::new();
-            crate::wallet::save_wallet(wallet_path, &w)
-                .expect("Failed to save master wallet");
+            crate::wallet::save_wallet(wallet_path, &w).expect("Failed to save master wallet");
             w
         }
     };
-
 
     println!(
         "Master wallet loaded. Pub: {}",
@@ -121,7 +119,10 @@ fn main() {
 
     let founder_units = founder_total_smallest / UNIT;
 
-    println!("💰 SALDO FOUNDER: {} MEMEOS", format_with_commas(founder_units));
+    println!(
+        "💰 SALDO FOUNDER: {} MEMEOS",
+        format_with_commas(founder_units)
+    );
 
     match storage.save_block(&genesis_block) {
         Ok(_) => println!("💾 Genesis block permanently saved to ./memeos_data."),
@@ -161,7 +162,10 @@ fn main() {
                     0
                 };
                 let founder_units = founder_total_smallest / UNIT;
-                println!("💰 SALDO FOUNDER: {} MEMEOS", format_with_commas(founder_units));
+                println!(
+                    "💰 SALDO FOUNDER: {} MEMEOS",
+                    format_with_commas(founder_units)
+                );
             }
             "2" => {
                 // send coin flow
@@ -213,4 +217,3 @@ fn main() {
         }
     }
 }
-                                                                                                                                                                                                                                                                    
